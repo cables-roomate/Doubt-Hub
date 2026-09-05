@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledger — Doubt Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1F5;
+    --paper-raised:#FFFFFF;
+    --ink:#16213E;
+    --ink-soft:#4A5578;
+    --line:#D8DDE8;
+    --amber:#D98A2B;
+    --amber-bg:#FBEEDA;
+    --teal:#2F8F6F;
+    --teal-bg:#E1F1EA;
+    --coral:#C85A4A;
+    --coral-bg:#FBE6E2;
+    --blue:#3A5FA0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.serif{font-family:'Fraunces',serif;}
+  button{font-family:inherit;cursor:pointer;}
+  a{color:inherit;}
+  #app{min-height:100vh;}
+
+  /* ---------- LOGIN ---------- */
+  .login-wrap{
+    min-height:100vh;
+    display:grid;
+    grid-template-columns:1.1fr 1fr;
+  }
+  @media (max-width:860px){
+    .login-wrap{grid-template-columns:1fr;}
+    .login-hero{display:none;}
+  }
+  .login-hero{
+    background:var(--ink);
+    color:var(--paper);
+    padding:64px 56px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    position:relative;
+    overflow:hidden;
+  }
+  .login-hero h1{
+    font-size:clamp(2.4rem,4.5vw,3.6rem);
+    line-height:1.08;
+    font-weight:500;
+    margin:0 0 20px 0;
+    max-width:9.5em;
+  }
+  .login-hero p{
+    color:#B9C1D9;
+    font-size:1.05rem;
+    line-height:1.6;
+    max-width:34ch;
+  }
+  .stack-cards{position:relative;height:220px;margin-top:40px;}
+  .stack-card{
+    position:absolute;
+    width:280px;
+    border-radius:4px;
+    padding:18px 20px;
+    font-size:0.85rem;
+    line-height:1.5;
+    box-shadow:0 12px 30px rgba(0,0,0,0.35);
+  }
+  .stack-card.c1{background:#233158;color:#DCE2F2;transform:rotate(-6deg);top:0;left:0;border-left:4px solid var(--amber);}
+  .stack-card.c2{background:#2C3D6E;color:#E5EAF7;transform:rotate(3deg);top:30px;left:60px;border-left:4px solid var(--blue);}
+  .stack-card.c3{background:#374B84;color:#EEF1FA;transform:rotate(-2deg);top:70px;left:120px;border-left:4px solid var(--teal);}
+  .login-foot{color:#7C87AC;font-size:0.85rem;}
+
+  .login-panel{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px 32px;
+  }
+  .login-card{width:100%;max-width:380px;}
+  .login-card h2{font-size:1.7rem;font-weight:500;margin:0 0 6px 0;}
+  .login-card .sub{color:var(--ink-soft);font-size:0.95rem;margin:0 0 28px 0;}
+  .role-toggle{
+    display:flex;
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+    margin-bottom:24px;
+  }
+  .role-toggle button{
+    flex:1;
+    padding:11px 0;
+    background:var(--paper-raised);
+    border:none;
+    font-size:0.92rem;
+    font-weight:600;
+    color:var(--ink-soft);
+    border-right:1px solid var(--line);
+  }
+  .role-toggle button:last-child{border-right:none;}
+  .role-toggle button.active{background:var(--ink);color:#fff;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:0.82rem;font-weight:600;color:var(--ink-soft);margin-bottom:6px;}
+  .field input, .field select, .field textarea{
+    width:100%;
+    padding:11px 13px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    font-size:0.95rem;
+    font-family:inherit;
+    background:var(--paper-raised);
+    color:var(--ink);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:2px solid var(--blue);
+    outline-offset:1px;
+  }
+  .primary-btn{
+    width:100%;
+    padding:12px 0;
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    border-radius:7px;
+    font-size:0.97rem;
+    font-weight:600;
+    margin-top:6px;
+  }
+  .primary-btn:hover{background:#233158;}
+  .login-err{color:var(--coral);font-size:0.85rem;margin:-8px 0 14px 0;min-height:1em;}
+
+  /* ---------- APP SHELL ---------- */
+  .shell{display:grid;grid-template-columns:236px 1fr;min-height:100vh;}
+  @media (max-width:760px){
+    .shell{grid-template-columns:1fr;}
+    .sidebar{position:sticky;top:0;z-index:5;display:flex;flex-direction:row;align-items:center;justify-content:space-between;padding:14px 18px;height:auto;}
+    .sidebar .nav{display:none;}
+    .sidebar .brand{margin:0;}
+    .sidebar .sidebar-foot{display:none;}
+  }
+  .sidebar{
+    background:var(--ink);
+    color:#DCE2F2;
+    padding:26px 20px;
+    display:flex;
+    flex-direction:column;
+  }
+  .brand{font-family:'Fraunces',serif;font-size:1.35rem;font-weight:600;color:#fff;margin-bottom:2px;}
+  .brand-role{font-size:0.78rem;color:#8D97BE;margin-bottom:28px;}
+  .nav{display:flex;flex-direction:column;gap:2px;flex:1;}
+  .nav a{
+    display:block;
+    padding:10px 12px;
+    border-radius:6px;
+    font-size:0.9rem;
+    font-weight:500;
+    color:#B9C1D9;
+    text-decoration:none;
+  }
+  .nav a:hover{background:#212F55;color:#fff;}
+  .nav a.active{background:#2C3D6E;color:#fff;}
+  .sidebar-foot{
+    border-top:1px solid #263257;
+    padding-top:16px;
+    font-size:0.85rem;
+  }
+  .sidebar-foot .who{font-weight:600;color:#fff;margin-bottom:2px;}
+  .sidebar-foot .role-tag{color:#8D97BE;margin-bottom:12px;}
+  .logout-link{color:#8D97BE;font-size:0.83rem;text-decoration:underline;background:none;border:none;padding:0;}
+  .logout-link:hover{color:#fff;}
+
+  .main{padding:40px 48px;max-width:980px;}
+  @media (max-width:760px){.main{padding:24px 20px;}}
+  .page-head{margin-bottom:28px;}
+  .page-head h1{font-size:1.9rem;font-weight:500;margin:0 0 6px 0;}
+  .page-head .lede{color:var(--ink-soft);font-size:0.98rem;margin:0;}
+
+  /* stat cards */
+  .stat-row{display:flex;gap:16px;margin-bottom:32px;flex-wrap:wrap;}
+  .stat-card{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px 20px;
+    min-width:150px;
+    flex:1;
+  }
+  .stat-card .num{font-family:'Fraunces',serif;font-size:2.1rem;font-weight:600;line-height:1;}
+  .stat-card .label{color:var(--ink-soft);font-size:0.85rem;margin-top:6px;}
+
+  .section-title{font-size:1.05rem;font-weight:600;margin:0 0 14px 0;}
+
+  /* doubt cards */
+  .doubt-card{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-left:4px solid var(--amber);
+    border-radius:8px;
+    padding:16px 20px;
+    margin-bottom:12px;
+  }
+  .doubt-card.resolved{border-left-color:var(--teal);}
+  .doubt-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+  .doubt-title{font-weight:600;font-size:1rem;margin:0 0 4px 0;}
+  .doubt-meta{color:var(--ink-soft);font-size:0.82rem;}
+  .badge{
+    display:inline-block;
+    padding:3px 10px;
+    border-radius:20px;
+    font-size:0.76rem;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .badge.open{background:var(--amber-bg);color:var(--amber);}
+  .badge.resolved{background:var(--teal-bg);color:var(--teal);}
+  .badge.urgent{background:var(--coral-bg);color:var(--coral);margin-left:6px;}
+  .doubt-desc{font-size:0.92rem;color:var(--ink-soft);margin:10px 0 0 0;line-height:1.55;}
+  .reply-box{
+    margin-top:12px;
+    background:var(--teal-bg);
+    border-radius:6px;
+    padding:12px 14px;
+    font-size:0.88rem;
+    color:#1F5E48;
+  }
+  .reply-box .who{font-weight:700;display:block;margin-bottom:3px;}
+
+  .empty-state{
+    background:var(--paper-raised);
+    border:1px dashed var(--line);
+    border-radius:10px;
+    padding:44px 24px;
+    text-align:center;
+    color:var(--ink-soft);
+  }
+  .empty-state h3{margin:0 0 8px 0;font-weight:500;color:var(--ink);}
+  .empty-state .cta-btn{
+    display:inline-block;
+    margin-top:14px;
+    background:var(--ink);
+    color:#fff;
+    padding:10px 20px;
+    border-radius:7px;
+    font-size:0.88rem;
+    font-weight:600;
+    text-decoration:none;
+    border:none;
+  }
+
+  /* form */
+  .form-card{background:var(--paper-raised);border:1px solid var(--line);border-radius:10px;padding:28px 30px;max-width:560px;}
+  .radio-row{display:flex;gap:10px;}
+  .radio-row label{
+    flex:1;
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:10px 12px;
+    font-size:0.88rem;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+  }
+  .radio-row input{width:auto;}
+
+  .toast{
+    position:fixed;
+    bottom:24px;
+    right:24px;
+    background:var(--ink);
+    color:#fff;
+    padding:13px 20px;
+    border-radius:8px;
+    font-size:0.9rem;
+    box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    opacity:0;
+    transform:translateY(10px);
+    transition:all 0.25s ease;
+    pointer-events:none;
+    z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+
+  .queue-item textarea{
+    width:100%;
+    margin-top:12px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:10px 12px;
+    font-family:inherit;
+    font-size:0.9rem;
+    min-height:64px;
+    resize:vertical;
+  }
+  .queue-actions{display:flex;gap:10px;margin-top:10px;}
+  .resolve-btn{
+    background:var(--teal);
+    color:#fff;
+    border:none;
+    padding:8px 16px;
+    border-radius:6px;
+    font-size:0.85rem;
+    font-weight:600;
+  }
+  .resolve-btn:disabled{background:#A9C6BB;cursor:not-allowed;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- DATA ---------------- */
+let doubts = [
+  {id:'d1', studentId:'seed-1', studentName:'Ravi Menon', subject:'Physics', title:'Why does terminal velocity depend on shape?', desc:'I understand terminal velocity happens when drag equals gravity, but I don\'t get why a flat sheet of paper falls slower than a crumpled one of the same mass.', priority:'Normal', status:'open', ts:Date.now()-1000*60*60*5},
+  {id:'d2', studentId:'seed-2', studentName:'Anjali Nair', subject:'Mathematics', title:'Confused about integration by parts order', desc:'How do I decide which function to treat as u and which as dv when both are polynomial and trig?', priority:'Urgent', status:'open', ts:Date.now()-1000*60*60*20},
+  {id:'d3', studentId:'seed-3', studentName:'Kevin George', subject:'Chemistry', title:'Difference between molarity and molality', desc:'Textbook defines both but I keep mixing them up when solving colligative property problems.', priority:'Normal', status:'resolved', ts:Date.now()-1000*60*60*40, reply:'Molarity is moles of solute per litre of solution (volume-based), molality is moles of solute per kilogram of solvent (mass-based). Molality is preferred for colligative properties because it doesn\'t change with temperature, unlike volume.', teacherName:'Mrs. Fernandes'},
+  {id:'d4', studentId:'seed-1', studentName:'Ravi Menon', subject:'Physics', title:'Sign convention in lens formula', desc:'I keep getting the wrong sign for image distance in concave lens problems.', priority:'Normal', status:'open', ts:Date.now()-1000*60*60*2}
+];
+
+let session = null; // { id, name, role, subject }
+
+function uid(){return 'u'+Math.random().toString(36).slice(2,9);}
+function fmtTime(ts){
+  const d = new Date(ts);
+  const diffH = Math.round((Date.now()-ts)/3600000);
+  if(diffH < 1) return 'just now';
+  if(diffH < 24) return diffH+'h ago';
+  return Math.round(diffH/24)+'d ago';
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2400);
+}
+function navigate(path){
+  location.hash = path;
+}
+function esc(s){
+  return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------------- ROUTER ---------------- */
+function currentPath(){
+  let h = location.hash.replace(/^#/, '');
+  if(!h) h = '/login';
+  return h;
+}
+
+function render(){
+  const path = currentPath();
+  const app = document.getElementById('app');
+
+  if(!session){
+    if(path !== '/login') { location.hash = '/login'; return; }
+    app.innerHTML = loginView();
+    bindLogin();
+    return;
+  }
+
+  if(path === '/login'){ location.hash = session.role === 'teacher' ? '/teacher' : '/student'; return; }
+
+  // guard cross-role access
+  if(session.role === 'student' && path.startsWith('/teacher')){ location.hash = '/student'; return; }
+  if(session.role === 'teacher' && path.startsWith('/student')){ location.hash = '/teacher'; return; }
+
+  let content = '';
+  if(path === '/student') content = studentDashboard();
+  else if(path === '/student/doubts') content = studentDoubts();
+  else if(path === '/student/new') content = studentNew();
+  else if(path === '/student/resolved') content = studentResolved();
+  else if(path === '/teacher') content = teacherDashboard();
+  else if(path === '/teacher/queue') content = teacherQueue();
+  else content = notFound();
+
+  app.innerHTML = shell(path, content);
+  bindShell();
+}
+
+window.addEventListener('hashchange', render);
+
+/* ---------------- LOGIN VIEW ---------------- */
+let loginRole = 'student';
+
+function loginView(){
+  return `
+  <div class="login-wrap">
+    <div class="login-hero">
+      <div>
+        <h1>Bring your doubts.<br>Leave with answers.</h1>
+        <p>A single desk where students file what's unclear and teachers work through the queue — nothing gets lost in a chat thread again.</p>
+        <div class="stack-cards">
+          <div class="stack-card c1">"Why does terminal velocity depend on shape?" <br><span style="opacity:.6">Physics · open</span></div>
+          <div class="stack-card c2">"Difference between molarity and molality" <br><span style="opacity:.6">Chemistry · resolved</span></div>
+          <div class="stack-card c3">"Integration by parts order?" <br><span style="opacity:.6">Maths · urgent</span></div>
+        </div>
+      </div>
+      <div class="login-foot">Ledger — doubt desk for classrooms</div>
+    </div>
+    <div class="login-panel">
+      <div class="login-card">
+        <h2>Sign in to your desk</h2>
+        <p class="sub">Pick your role to continue. No password needed for this demo.</p>
+        <div class="role-toggle">
+          <button type="button" id="role-student" class="${loginRole==='student'?'active':''}">Student</button>
+          <button type="button" id="role-teacher" class="${loginRole==='teacher'?'active':''}">Teacher</button>
+        </div>
+        <form id="login-form">
+          <div class="field">
+            <label for="name">Your name</label>
+            <input id="name" type="text" placeholder="e.g. Priya Sharma" required>
+          </div>
+          <div class="field" id="subject-field" style="${loginRole==='teacher'?'display:none':''}">
+            <label for="subject">Class / subject you need help in</label>
+            <select id="subject">
+              <option>Physics</option>
+              <option>Chemistry</option>
+              <option>Mathematics</option>
+              <option>Biology</option>
+              <option>Computer Science</option>
+            </select>
+          </div>
+          <div class="login-err" id="login-err"></div>
+          <button type="submit" class="primary-btn">Enter desk</button>
+        </form>
+      </div>
+    </div>
+  </div>`;
+}
+
+function bindLogin(){
+  document.getElementById('role-student').onclick = ()=>{loginRole='student'; render();};
+  document.getElementById('role-teacher').onclick = ()=>{loginRole='teacher'; render();};
+  document.getElementById('login-form').onsubmit = (e)=>{
+    e.preventDefault();
+    const name = document.getElementById('name').value.trim();
+    if(!name){ document.getElementById('login-err').textContent = 'Please enter your name.'; return; }
+    session = { id: uid(), name, role: loginRole, subject: loginRole==='student' ? document.getElementById('subject').value : null };
+    navigate(loginRole==='teacher' ? '/teacher' : '/student');
+  };
+}
+
+/* ---------------- SHELL ---------------- */
+function shell(path, content){
+  const isStudent = session.role === 'student';
+  const navItems = isStudent ? [
+    {href:'/student', label:'Dashboard'},
+    {href:'/student/doubts', label:'My doubts'},
+    {href:'/student/new', label:'Ask a doubt'},
+    {href:'/student/resolved', label:'Resolved'},
+  ] : [
+    {href:'/teacher', label:'Dashboard'},
+    {href:'/teacher/queue', label:'Queue'},
+  ];
+  return `
+  <div class="shell">
+    <div class="sidebar">
+      <div>
+        <div class="brand">Ledger</div>
+        <div class="brand-role">${isStudent ? 'Student desk' : 'Teacher desk'}</div>
+      </div>
+      <div class="nav">
+        ${navItems.map(n=>`<a href="#${n.href}" class="${path===n.href?'active':''}">${n.label}</a>`).join('')}
+      </div>
+      <div class="sidebar-foot">
+        <div class="who">${esc(session.name)}</div>
+        <div class="role-tag">${isStudent ? esc(session.subject) : 'Faculty'}</div>
+        <button class="logout-link" id="logout-btn">Sign out</button>
+      </div>
+    </div>
+    <div class="main">${content}</div>
+  </div>`;
+}
+
+function bindShell(){
+  const lb = document.getElementById('logout-btn');
+  if(lb) lb.onclick = ()=>{ session = null; navigate('/login'); };
+
+  const form = document.getElementById('new-doubt-form');
+  if(form){
+    form.onsubmit = (e)=>{
+      e.preventDefault();
+      const title = document.getElementById('nd-title').value.trim();
+      const desc = document.getElementById('nd-desc').value.trim();
+      const subject = document.getElementById('nd-subject').value;
+      const priority = document.querySelector('input[name="priority"]:checked').value;
+      if(!title || !desc) return;
+      doubts.unshift({
+        id: uid(), studentId: session.id, studentName: session.name,
+        subject, title, desc, priority, status:'open', ts: Date.now()
+      });
+      showToast('Doubt submitted to the queue');
+      navigate('/student/doubts');
+    };
+  }
+
+  document.querySelectorAll('.resolve-btn').forEach(btn=>{
+    btn.onclick = ()=>{
+      const id = btn.getAttribute('data-id');
+      const ta = document.querySelector(`textarea[data-id="${id}"]`);
+      const reply = ta.value.trim();
+      if(!reply){ ta.focus(); return; }
+      const d = doubts.find(x=>x.id===id);
+      d.status = 'resolved';
+      d.reply = reply;
+      d.teacherName = session.name;
+      showToast('Marked as resolved');
+      render();
+    };
+  });
+}
+
+/* ---------------- STUDENT VIEWS ---------------- */
+function myDoubts(){
+  return doubts.filter(d=>d.studentId===session.id).sort((a,b)=>b.ts-a.ts);
+}
+
+function doubtCardHTML(d){
+  return `
+  <div class="doubt-card ${d.status==='resolved'?'resolved':''}">
+    <div class="doubt-top">
+      <div>
+        <p class="doubt-title">${esc(d.title)}</p>
+        <div class="doubt-meta">${esc(d.subject)} · ${fmtTime(d.ts)}${d.studentName && session.role==='teacher' ? ' · '+esc(d.studentName) : ''}</div>
+      </div>
+      <div>
+        <span class="badge ${d.status}">${d.status==='open'?'Open':'Resolved'}</span>
+        ${d.priority==='Urgent' ? '<span class="badge urgent">Urgent</span>' : ''}
+      </div>
+    </div>
+    <p class="doubt-desc">${esc(d.desc)}</p>
+    ${d.status==='resolved' ? `<div class="reply-box"><span class="who">${esc(d.teacherName||'Teacher')} replied</span>${esc(d.reply)}</div>` : ''}
+  </div>`;
+}
+
+function studentDashboard(){
+  const mine = myDoubts();
+  const open = mine.filter(d=>d.status==='open').length;
+  const resolved = mine.filter(d=>d.status==='resolved').length;
+  const recent = mine.slice(0,3);
+  return `
+  <div class="page-head">
+    <h1>Welcome back, ${esc(session.name.split(' ')[0])}</h1>
+    <p class="lede">Here's where things stand on your ${esc(session.subject)} doubts.</p>
+  </div>
+  <div class="stat-row">
+    <div class="stat-card"><div class="num">${open}</div><div class="label">Open doubts</div></div>
+    <div class="stat-card"><div class="num">${resolved}</div><div class="label">Resolved</div></div>
+    <div class="stat-card"><div class="num">${mine.length}</div><div class="label">Total asked</div></div>
+  </div>
+  <h2 class="section-title">Recent activity</h2>
+  ${recent.length ? recent.map(doubtCardHTML).join('') : emptyState('No doubts yet', 'Ask your first one and it lands straight in your teacher\'s queue.', '/student/new', 'Ask a doubt')}
+  `;
+}
+
+function studentDoubts(){
+  const mine = myDoubts();
+  return `
+  <div class="page-head">
+    <h1>My doubts</h1>
+    <p class="lede">Everything you've asked, open and resolved.</p>
+  </div>
+  ${mine.length ? mine.map(doubtCardHTML).join('') : emptyState('No doubts yet', 'Ask your first one and it lands straight in your teacher\'s queue.', '/student/new', 'Ask a doubt')}
+  `;
+}
+
+function studentResolved(){
+  const mine = myDoubts().filter(d=>d.status==='resolved');
+  return `
+  <div class="page-head">
+    <h1>Resolved</h1>
+    <p class="lede">Doubts your teacher has already answered.</p>
+  </div>
+  ${mine.length ? mine.map(doubtCardHTML).join('') : emptyState('Nothing resolved yet', 'Once a teacher answers one of your open doubts, it\'ll show up here.', '/student/doubts', 'View my doubts')}
+  `;
+}
+
+function studentNew(){
+  return `
+  <div class="page-head">
+    <h1>Ask a doubt</h1>
+    <p class="lede">Be specific — the clearer the question, the faster the answer.</p>
+  </div>
+  <div class="form-card">
+    <form id="new-doubt-form">
+      <div class="field">
+        <label for="nd-subject">Subject</label>
+        <select id="nd-subject">
+          <option ${session.subject==='Physics'?'selected':''}>Physics</option>
+          <option ${session.subject==='Chemistry'?'selected':''}>Chemistry</option>
+          <option ${session.subject==='Mathematics'?'selected':''}>Mathematics</option>
+          <option ${session.subject==='Biology'?'selected':''}>Biology</option>
+          <option ${session.subject==='Computer Science'?'selected':''}>Computer Science</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="nd-title">Doubt title</label>
+        <input id="nd-title" type="text" placeholder="e.g. Why is entropy always increasing?" required>
+      </div>
+      <div class="field">
+        <label for="nd-desc">Explain what's unclear</label>
+        <textarea id="nd-desc" rows="5" placeholder="Give context — what have you tried, where exactly does it stop making sense?" required></textarea>
+      </div>
+      <div class="field">
+        <label>Priority</label>
+        <div class="radio-row">
+          <label><input type="radio" name="priority" value="Normal" checked> Normal</label>
+          <label><input type="radio" name="priority" value="Urgent"> Urgent — exam soon</label>
+        </div>
+      </div>
+      <button type="submit" class="primary-btn">Submit to queue</button>
+    </form>
+  </div>
+  `;
+}
+
+/* ---------------- TEACHER VIEWS ---------------- */
+function teacherDashboard(){
+  const open = doubts.filter(d=>d.status==='open');
+  const resolved = doubts.filter(d=>d.status==='resolved');
+  const urgent = open.filter(d=>d.priority==='Urgent').length;
+  return `
+  <div class="page-head">
+    <h1>Good to see you, ${esc(session.name.split(' ')[0])}</h1>
+    <p class="lede">Here's the state of the desk across all students.</p>
+  </div>
+  <div class="stat-row">
+    <div class="stat-card"><div class="num">${open.length}</div><div class="label">Awaiting reply</div></div>
+    <div class="stat-card"><div class="num">${urgent}</div><div class="label">Marked urgent</div></div>
+    <div class="stat-card"><div class="num">${resolved.length}</div><div class="label">Resolved so far</div></div>
+  </div>
+  <h2 class="section-title">Newest in the queue</h2>
+  ${open.slice(0,3).map(doubtCardHTML).join('') || emptyState('Queue is empty', 'Nothing waiting on you right now.', '/teacher/queue', 'View queue')}
+  `;
+}
+
+function teacherQueue(){
+  const open = doubts.filter(d=>d.status==='open').sort((a,b)=> (b.priority==='Urgent')-(a.priority==='Urgent') || a.ts-b.ts);
+  return `
+  <div class="page-head">
+    <h1>Queue</h1>
+    <p class="lede">${open.length} doubt${open.length===1?'':'s'} waiting on a reply, urgent ones first.</p>
+  </div>
+  ${open.length ? open.map(d=>`
+    <div class="doubt-card queue-item">
+      <div class="doubt-top">
+        <div>
+          <p class="doubt-title">${esc(d.title)}</p>
+          <div class="doubt-meta">${esc(d.subject)} · ${esc(d.studentName)} · ${fmtTime(d.ts)}</div>
+        </div>
+        <div>${d.priority==='Urgent' ? '<span class="badge urgent">Urgent</span>' : ''}</div>
+      </div>
+      <p class="doubt-desc">${esc(d.desc)}</p>
+      <textarea data-id="${d.id}" placeholder="Write your reply..."></textarea>
+      <div class="queue-actions">
+        <button class="resolve-btn" data-id="${d.id}">Mark resolved</button>
+      </div>
+    </div>
+  `).join('') : emptyState('Queue is empty', 'No open doubts right now — nice work.', '/teacher', 'Back to dashboard')}
+  `;
+}
+
+/* ---------------- SHARED ---------------- */
+function emptyState(title, body, href, cta){
+  return `
+  <div class="empty-state">
+    <h3>${title}</h3>
+    <p>${body}</p>
+    <a class="cta-btn" href="#${href}">${cta}</a>
+  </div>`;
+}
+
+function notFound(){
+  return `<div class="page-head"><h1>Page not found</h1><p class="lede">That route doesn't exist in this desk.</p></div>`;
+}
+
+render();
+</script>
+</body>
+</html>
